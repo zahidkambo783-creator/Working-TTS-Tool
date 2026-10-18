@@ -37,9 +37,16 @@ export async function POST(req: Request) {
        const voice = voices.find(v => v.id === voiceId);
        if (!voice) return NextResponse.json({ error: "Voice not found" }, { status: 404 });
        
-       buffer = await readFile(voice.original_audio_path);
+       let audioPath = voice.original_audio_path;
+       try {
+         buffer = await readFile(/*turbopackIgnore: true*/ audioPath);
+       } catch {
+         const filename = voice.original_audio_path.split(/[\\/]/).pop() || "";
+         audioPath = join(process.cwd(), "voices", filename);
+         buffer = await readFile(/*turbopackIgnore: true*/ audioPath);
+       }
        refText = voice.ref_text;
-       if (voice.original_audio_path.endsWith(".mp3")) fileType = "audio/mp3";
+       if (audioPath.endsWith(".mp3")) fileType = "audio/mp3";
     } else {
        const refAudio = formData.get("refAudio") as File;
        refText = formData.get("refText") as string;

@@ -14,8 +14,15 @@ export async function GET(req: Request) {
     const voice = voices.find(v => v.id === id);
     if (!voice) return NextResponse.json({ error: "Voice not found" }, { status: 404 });
 
-    const buffer = await readFile(voice.original_audio_path);
-    const ext = path.extname(voice.original_audio_path).toLowerCase();
+    let audioPath = voice.original_audio_path;
+    try {
+      await readFile(/*turbopackIgnore: true*/ audioPath);
+    } catch {
+      audioPath = path.join(process.cwd(), "voices", path.basename(voice.original_audio_path));
+    }
+
+    const buffer = await readFile(/*turbopackIgnore: true*/ audioPath);
+    const ext = path.extname(audioPath).toLowerCase();
     
     let mimeType = "audio/wav";
     if (ext === ".mp3") mimeType = "audio/mpeg";

@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎙️ ZK Voice Studio
 
-## Getting Started
+An ultra-realistic, multi-engine AI Voice Cloning and Text-to-Speech (TTS) Studio.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ⚡ Features
+- **Edge TTS:** 322+ free worldwide voices with zero quota limits and DRM v2 bypass.
+- **Kokoro TTS:** 41 multi-language local AI voices (American, British, Hindi, Spanish, French, Italian, Portuguese) with pre-rendered instant previews.
+- **F5-TTS Voice Cloning:** 
+  - Dual-Engine Switch: **Local PC (Free & Offline)** vs **Replicate Cloud GPU (Ultra Fast)**.
+  - Multi-Language Auto-Transliteration (`any-ascii` for Hindi Devanagari, Urdu, Spanish, etc. with zero noise).
+  - **1-Click AI Auto-Transcribe:** Automatically transcribe reference audio into exact text with Faster-Whisper.
+- **Silence Remover:** Audio waveform inspector and automatic silence trimmer.
+- **Multi-Key Failover:** ElevenLabs rotation system with automated key testing.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 💻 Running On a New PC / Laptop (Step-by-Step)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerequisites:
+1. **Node.js (v18 or v20+):** [Download Node.js](https://nodejs.org/)
+2. **Python (3.10 or 3.11):** [Download Python](https://www.python.org/downloads/) *(Important: Check "Add Python to PATH" during install)*
+3. **FFmpeg:** Open PowerShell and run: `winget install ffmpeg`
 
-## Learn More
+### Quick Setup:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/zahidkambo783-creator/Working-TTS-Tool.git
+   cd Working-TTS-Tool/zk-voice-studio
+   ```
+2. **One-Click Automated Setup:**
+   - Double-click **`Install_On_New_Device.bat`**
+   - It will automatically install all npm packages and Python AI dependencies!
+3. **Start the Studio:**
+   - Double-click **`Start_ZK_Voice_Studio.bat`**
+   - Both Web Interface & Python AI Engine will launch concurrently at `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📱 Running on Mobile / Tablet (Same Wi-Fi)
+You can use ZK Voice Studio from your phone or iPad without installing anything on your phone:
+1. Keep ZK Voice Studio running on your PC.
+2. Find your PC's local IP address (open CMD and type `ipconfig`, look for IPv4 e.g. `192.168.1.15`).
+3. Open your mobile browser and enter: `http://192.168.1.15:3000`
+4. You can now generate voices, record audio, and clone voices directly from your phone!

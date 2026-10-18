@@ -12,10 +12,25 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-# Add FFmpeg to PATH for torchaudio, pydub, and F5-TTS
-ffmpeg_bin = r'C:\Users\Zahid\AppData\Local\ffmpegio\ffmpeg-downloader\ffmpeg\bin'
-if os.path.exists(ffmpeg_bin) and ffmpeg_bin not in os.environ.get('PATH', ''):
-    os.environ['PATH'] = ffmpeg_bin + ';' + os.environ['PATH']
+# Dynamically locate FFmpeg across all PCs and OS environments
+import shutil
+
+ffmpeg_path = shutil.which('ffmpeg')
+ffmpeg_bin = os.path.dirname(ffmpeg_path) if ffmpeg_path else ''
+
+if not ffmpeg_bin:
+    user_appdata = os.environ.get('LOCALAPPDATA', '')
+    candidates = [
+        os.path.join(user_appdata, r'ffmpegio\ffmpeg-downloader\ffmpeg\bin'),
+        r'C:\ffmpeg\bin',
+        r'C:\Program Files\ffmpeg\bin',
+        os.path.join(os.path.dirname(__file__), 'ffmpeg', 'bin'),
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            ffmpeg_bin = c
+            os.environ['PATH'] = ffmpeg_bin + ';' + os.environ.get('PATH', '')
+            break
 
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import FileResponse, JSONResponse
@@ -25,8 +40,8 @@ from starlette.background import BackgroundTask
 from pydantic import BaseModel
 from pydub import AudioSegment
 import pydub.utils
-AudioSegment.converter = os.path.join(ffmpeg_bin, 'ffmpeg.exe') if os.path.exists(ffmpeg_bin) else 'ffmpeg'
-pydub.utils.get_prober_name = lambda: os.path.join(ffmpeg_bin, 'ffprobe.exe') if os.path.exists(ffmpeg_bin) else 'ffprobe'
+AudioSegment.converter = os.path.join(ffmpeg_bin, 'ffmpeg.exe') if (ffmpeg_bin and os.path.exists(os.path.join(ffmpeg_bin, 'ffmpeg.exe'))) else 'ffmpeg'
+pydub.utils.get_prober_name = lambda: os.path.join(ffmpeg_bin, 'ffprobe.exe') if (ffmpeg_bin and os.path.exists(os.path.join(ffmpeg_bin, 'ffprobe.exe'))) else 'ffprobe'
 from pydub.silence import split_on_silence
 import soundfile as sf
 
