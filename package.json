@@ -12,6 +12,7 @@
   "dependencies": {
     "@gradio/client": "^2.7.1",
     "@types/ws": "^8.18.1",
+    "any-ascii": "^0.3.3",
     "edge-tts": "^1.0.1",
     "google-tts-api": "^2.0.2",
     "idb-keyval": "^6.3.0",

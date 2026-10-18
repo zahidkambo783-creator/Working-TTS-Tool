@@ -115,6 +115,7 @@ export default function Home() {
   const [elevenTab, setElevenTab] = useState<"default" | "premium">("default");
   const [voiceProvider, setVoiceProvider] = useState<"edge" | "elevenlabs" | "kokoro" | "f5">("edge");
   const [clonedVoices, setClonedVoices] = useState<any[]>([]);
+  const [f5Engine, setF5Engine] = useState<"local" | "replicate">("local");
   const [kokoroLangFilter, setKokoroLangFilter] = useState<string>("all");
   const [kokoroSearch, setKokoroSearch] = useState<string>("");
 
@@ -152,6 +153,9 @@ export default function Home() {
 
       const savedFavs = localStorage.getItem("zk_favorites");
       if (savedFavs) setFavorites(JSON.parse(savedFavs));
+
+      const savedEngine = localStorage.getItem("zk_f5_engine");
+      if (savedEngine === "local" || savedEngine === "replicate") setF5Engine(savedEngine);
     } catch (e) {
       console.error("Failed to load local data", e);
     }
@@ -311,9 +315,14 @@ export default function Home() {
       } else if (voiceProvider === "f5") {
         if (!selectedVoice.startsWith("voice_")) throw new Error("Please select a cloned voice from 'My Voices' first.");
         
+        if (f5Engine === "replicate" && !replicateToken.trim()) {
+          throw new Error("Replicate API token is required for Cloud GPU mode. Please enter your token in Settings or switch to Local PC Engine.");
+        }
+
         const formData = new FormData();
         formData.append("text", text);
         formData.append("voice_id", selectedVoice);
+        formData.append("engine", f5Engine);
         if (replicateToken) formData.append("replicate_token", replicateToken);
         if (hfToken) formData.append("hf_token", hfToken);
         
@@ -322,7 +331,7 @@ export default function Home() {
           body: formData,
         });
         const cv = clonedVoices.find(v => v.id === selectedVoice);
-        voiceNameLabel = cv ? cv.voice_name : "Cloned Voice";
+        voiceNameLabel = cv ? `${cv.voice_name} (${f5Engine === "local" ? "Local PC" : "Replicate"})` : "Cloned Voice";
       }
 
       if (res && res.ok) {
@@ -488,7 +497,7 @@ export default function Home() {
     displayVoiceSubtitle = kVoiceObj ? `${kVoiceObj.langLabel} • Local Offline AI` : "Local Offline AI";
   } else if (voiceProvider === "f5") {
     displayVoiceName = clonedVoices.find(v => v.id === selectedVoice)?.voice_name ?? "Cloned Voice";
-    displayVoiceSubtitle = "F5 Zero-Shot Clone";
+    displayVoiceSubtitle = f5Engine === "local" ? "F5 Clone • Local PC (Free)" : "F5 Clone • Replicate Cloud GPU";
   }
 
   // Components for Sidebar Navigation
@@ -741,6 +750,54 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
+
+                    {voiceProvider === "f5" && (
+                      <div className="p-4 border rounded-xl flex flex-col gap-2.5" style={{ background: "var(--surface)", borderColor: "var(--card-border)" }}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--muted)" }}>Cloning Engine</span>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${f5Engine === "local" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-purple-500/10 text-purple-400 border border-purple-500/20"}`}>
+                            {f5Engine === "local" ? "Free Offline" : "Cloud GPU"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 p-1 rounded-lg" style={{ background: "var(--elevated)" }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setF5Engine("local");
+                              localStorage.setItem("zk_f5_engine", "local");
+                            }}
+                            className={`flex flex-col items-center justify-center py-2 px-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                              f5Engine === "local"
+                                ? "bg-[var(--accent)] text-[#09090D] shadow-sm font-bold"
+                                : "text-[var(--muted)] hover:text-[var(--foreground)]"
+                            }`}
+                          >
+                            <span className="flex items-center gap-1">💻 Local PC</span>
+                            <span className="text-[9px] opacity-80">Free • Offline</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setF5Engine("replicate");
+                              localStorage.setItem("zk_f5_engine", "replicate");
+                            }}
+                            className={`flex flex-col items-center justify-center py-2 px-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                              f5Engine === "replicate"
+                                ? "bg-[var(--accent)] text-[#09090D] shadow-sm font-bold"
+                                : "text-[var(--muted)] hover:text-[var(--foreground)]"
+                            }`}
+                          >
+                            <span className="flex items-center gap-1">☁️ Replicate</span>
+                            <span className="text-[9px] opacity-80">Fast GPU (~4s)</span>
+                          </button>
+                        </div>
+                        {f5Engine === "replicate" && !replicateToken.trim() && (
+                          <p className="text-[10px] text-amber-400 flex items-center gap-1">
+                            ⚠️ Enter Replicate Token in <button type="button" onClick={() => setActiveView("settings")} className="underline font-bold hover:text-white cursor-pointer">Settings</button>
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     <ControlsPanel controls={controls} onChange={setControls} />
                     
@@ -1101,12 +1158,31 @@ export default function Home() {
             {/* MY VOICES WORKSPACE */}
             {activeView === "my-voices" && (
               <div className="flex flex-col gap-6 animate-in fade-in duration-300">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
                   <div className="flex flex-col">
                     <h2 className="text-2xl font-bold tracking-tight">My Voices</h2>
                     <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>Your cloned and custom voice models.</p>
                   </div>
-                  <button onClick={() => setActiveView("clone-voice")} className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90 cursor-pointer" style={{ background: "var(--accent)", color: "white" }}>+ Clone Voice</button>
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex items-center p-1 rounded-lg border text-xs" style={{ background: "var(--surface)", borderColor: "var(--card-border)" }}>
+                      <span className="text-[10px] uppercase font-bold px-2" style={{ color: "var(--muted)" }}>Engine:</span>
+                      <button
+                        type="button"
+                        onClick={() => { setF5Engine("local"); localStorage.setItem("zk_f5_engine", "local"); }}
+                        className={`px-2.5 py-1 rounded text-xs font-medium cursor-pointer transition-colors ${f5Engine === "local" ? "bg-[var(--accent)] text-[#09090D] font-bold" : "text-[var(--muted)] hover:text-white"}`}
+                      >
+                        💻 Local PC (Free)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setF5Engine("replicate"); localStorage.setItem("zk_f5_engine", "replicate"); }}
+                        className={`px-2.5 py-1 rounded text-xs font-medium cursor-pointer transition-colors ${f5Engine === "replicate" ? "bg-[var(--accent)] text-[#09090D] font-bold" : "text-[var(--muted)] hover:text-white"}`}
+                      >
+                        ☁️ Replicate Cloud
+                      </button>
+                    </div>
+                    <button onClick={() => setActiveView("clone-voice")} className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90 cursor-pointer" style={{ background: "var(--accent)", color: "white" }}>+ Clone Voice</button>
+                  </div>
                 </div>
                 {clonedVoices.length === 0 ? (
                   <div className="rounded-2xl border p-12 text-center" style={{ background: "var(--surface)", borderColor: "var(--card-border)" }}>
@@ -1354,33 +1430,94 @@ export default function Home() {
                           <span className="text-xs font-medium">{keyTestStatus}</span>
                         )}
                       </div>
+                    </div>
+                  </div>
                       
-                      <div className="mt-6 flex flex-col gap-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--muted)" }}>Replicate API Token (Voice Cloning / F5-TTS)</label>
-                          <a 
-                            href="https://replicate.com/account/api-tokens" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-[11px] text-[var(--accent)] hover:underline"
-                          >
-                            Get Free Token ↗
-                          </a>
+                  <div className="p-6 border-b" style={{ borderColor: "var(--card-border)" }}>
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div>
+                        <h3 className="font-medium text-sm mb-1">Voice Cloning (F5-TTS) Engine</h3>
+                        <p className="text-xs" style={{ color: "var(--muted)" }}>Choose whether voice cloning runs locally on your PC or via Replicate Cloud GPU.</p>
+                      </div>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${f5Engine === "local" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-purple-500/10 text-purple-400 border border-purple-500/20"}`}>
+                        {f5Engine === "local" ? "Local PC Active" : "Replicate Cloud Active"}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                      {/* Local PC Option */}
+                      <div 
+                        onClick={() => {
+                          setF5Engine("local");
+                          localStorage.setItem("zk_f5_engine", "local");
+                        }}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                          f5Engine === "local" 
+                            ? "border-[var(--accent)] bg-[var(--elevated)] shadow-sm ring-1 ring-[var(--accent)]" 
+                            : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--muted)]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-bold text-sm flex items-center gap-1.5">
+                            💻 Local PC Engine
+                          </span>
+                          <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">100% Free</span>
                         </div>
-                        <input 
-                          type="password"
-                          value={replicateToken}
-                          onChange={(e) => {
-                             setReplicateToken(e.target.value);
-                             localStorage.setItem("replicate-token", e.target.value);
-                          }}
-                          placeholder="r8_..."
-                          className="w-full bg-transparent border rounded-lg px-4 py-2 text-sm outline-none focus:border-[var(--accent)] transition-colors"
-                          style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
-                        />
-                        <p className="text-[10px] mt-1 mb-2" style={{ color: "var(--muted)" }}>Fast cloud Voice Cloning with no ZeroGPU quota limits and no queue delays.</p>
+                        <p className="text-xs text-[var(--muted)] leading-relaxed">
+                          Runs completely offline on your PC via Python backend. Unlimited generations, zero API keys, 100% private.
+                        </p>
                       </div>
 
+                      {/* Replicate Cloud GPU Option */}
+                      <div 
+                        onClick={() => {
+                          setF5Engine("replicate");
+                          localStorage.setItem("zk_f5_engine", "replicate");
+                        }}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                          f5Engine === "replicate" 
+                            ? "border-[var(--accent)] bg-[var(--elevated)] shadow-sm ring-1 ring-[var(--accent)]" 
+                            : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--muted)]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-bold text-sm flex items-center gap-1.5">
+                            ☁️ Replicate Cloud
+                          </span>
+                          <span className="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded">Fast GPU (~4s)</span>
+                        </div>
+                        <p className="text-xs text-[var(--muted)] leading-relaxed">
+                          Runs on NVIDIA Cloud GPUs on Replicate. Generates in ~3-5 seconds with instant output. Requires free API token.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 pt-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--muted)" }}>Replicate API Token (For Cloud GPU Mode)</label>
+                        <a 
+                          href="https://replicate.com/account/api-tokens" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-[11px] text-[var(--accent)] hover:underline"
+                        >
+                          Get Free Token ↗
+                        </a>
+                      </div>
+                      <input 
+                        type="password"
+                        value={replicateToken}
+                        onChange={(e) => {
+                           setReplicateToken(e.target.value);
+                           localStorage.setItem("replicate-token", e.target.value);
+                        }}
+                        placeholder="r8_..."
+                        className="w-full bg-transparent border rounded-lg px-4 py-2 text-sm outline-none focus:border-[var(--accent)] transition-colors"
+                        style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
+                      />
+                      <p className="text-[10px]" style={{ color: "var(--muted)" }}>
+                        Required when Replicate Cloud mode is selected. Local PC mode does not require this token.
+                      </p>
                     </div>
                   </div>
                   
