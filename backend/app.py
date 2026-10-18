@@ -31,34 +31,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load Kokoro Pipeline globally (American English by default)
-pipeline = None
-if KPipeline is not None:
-    print("Loading Kokoro TTS model (this will download ~82MB on first run)...")
-    pipeline = KPipeline(lang_code='a') # 'a' for American English
-    print("Kokoro loaded successfully!")
+# Multi-language Kokoro Pipelines (American, British, Hindi, Spanish, French, Italian, Portuguese)
+kokoro_pipelines = {}
+
+def get_kokoro_pipeline(voice_id: str):
+    if KPipeline is None:
+        return None
+    prefix = voice_id[:2].lower() if len(voice_id) >= 2 else 'af'
+    lang_map = {
+        'af': 'a', 'am': 'a',
+        'bf': 'b', 'bm': 'b',
+        'hf': 'h', 'hm': 'h',
+        'ef': 'e', 'em': 'e',
+        'ff': 'f',
+        'if': 'i', 'im': 'i',
+        'pf': 'p', 'pm': 'p',
+        'jf': 'j', 'jm': 'j',
+        'zf': 'z', 'zm': 'z',
+    }
+    lang = lang_map.get(prefix, 'a')
+    if lang not in kokoro_pipelines:
+        print(f"Initializing Kokoro pipeline for language '{lang}'...")
+        kokoro_pipelines[lang] = KPipeline(lang_code=lang)
+    return kokoro_pipelines[lang]
 
 class KokoroRequest(BaseModel):
     text: str
-    voice: str = 'af_heart' # default voice
+    voice: str = 'af_heart'
 
 @app.post("/api/tts/kokoro")
 async def generate_kokoro(req: KokoroRequest):
-    if pipeline is None:
+    p = get_kokoro_pipeline(req.voice)
+    if p is None:
         return JSONResponse(status_code=500, content={"error": "Kokoro is not installed on the server."})
     
     try:
-        generator = pipeline(req.text, voice=req.voice, speed=1, split_pattern=r'\n+')
-        
+        generator = p(req.text, voice=req.voice, speed=1, split_pattern=r'\n+')
         all_audio = []
         sample_rate = 24000
-        
         for i, (gs, ps, audio) in enumerate(generator):
             all_audio.extend(audio.tolist())
             
         output_path = "kokoro_output.wav"
         sf.write(output_path, all_audio, sample_rate)
-        
         return FileResponse(output_path, media_type="audio/wav")
     except Exception as e:
         import traceback

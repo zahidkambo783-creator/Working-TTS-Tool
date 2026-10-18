@@ -15,6 +15,73 @@ const DEFAULT_VOICE = "en-US-AriaNeural";
 
 type ViewType = "home" | "tts" | "voice-changer" | "silence-remover" | "voice-library" | "elevenlabs-library" | "kokoro-library" | "my-voices" | "favourite-voices" | "clone-voice" | "projects" | "history" | "settings";
 
+export interface KokoroVoiceDef {
+  id: string;
+  name: string;
+  gender: "Female" | "Male";
+  langGroup: "us" | "gb" | "hi" | "es" | "fr" | "it" | "pt";
+  langLabel: string;
+  flag: string;
+  description: string;
+}
+
+export const KOKORO_VOICES: KokoroVoiceDef[] = [
+  // American English (20)
+  { id: "af_heart", name: "Heart", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Warm, natural & expressive" },
+  { id: "af_alloy", name: "Alloy", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Balanced & articulate" },
+  { id: "af_aoede", name: "Aoede", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Deep & melodic" },
+  { id: "af_bella", name: "Bella", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Soft & conversational" },
+  { id: "af_jessica", name: "Jessica", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Crisp & professional" },
+  { id: "af_kore", name: "Kore", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Calm & authoritative" },
+  { id: "af_nicole", name: "Nicole", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Smooth & friendly" },
+  { id: "af_nova", name: "Nova", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Bright & energetic" },
+  { id: "af_river", name: "River", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Gentle narrative" },
+  { id: "af_sarah", name: "Sarah", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Polished & clear" },
+  { id: "af_sky", name: "Sky", gender: "Female", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Vibrant & youthful" },
+  { id: "am_adam", name: "Adam", gender: "Male", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Confident & dynamic" },
+  { id: "am_echo", name: "Echo", gender: "Male", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Rich & resonant" },
+  { id: "am_eric", name: "Eric", gender: "Male", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Warm & authoritative" },
+  { id: "am_fenrir", name: "Fenrir", gender: "Male", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Deep & commanding" },
+  { id: "am_liam", name: "Liam", gender: "Male", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Clear & modern" },
+  { id: "am_michael", name: "Michael", gender: "Male", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Natural storyteller" },
+  { id: "am_onyx", name: "Onyx", gender: "Male", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Cinematic & profound" },
+  { id: "am_puck", name: "Puck", gender: "Male", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Lively & playful" },
+  { id: "am_santa", name: "Santa", gender: "Male", langGroup: "us", langLabel: "American English", flag: "🇺🇸", description: "Jovial & festive" },
+
+  // British English (8)
+  { id: "bf_alice", name: "Alice", gender: "Female", langGroup: "gb", langLabel: "British English", flag: "🇬🇧", description: "Classic British RP" },
+  { id: "bf_emma", name: "Emma", gender: "Female", langGroup: "gb", langLabel: "British English", flag: "🇬🇧", description: "Elegant & refined" },
+  { id: "bf_isabella", name: "Isabella", gender: "Female", langGroup: "gb", langLabel: "British English", flag: "🇬🇧", description: "Polite & articulate" },
+  { id: "bf_lily", name: "Lily", gender: "Female", langGroup: "gb", langLabel: "British English", flag: "🇬🇧", description: "Soft & graceful" },
+  { id: "bm_daniel", name: "Daniel", gender: "Male", langGroup: "gb", langLabel: "British English", flag: "🇬🇧", description: "Modern British male" },
+  { id: "bm_fable", name: "Fable", gender: "Male", langGroup: "gb", langLabel: "British English", flag: "🇬🇧", description: "Literary storyteller" },
+  { id: "bm_george", name: "George", gender: "Male", langGroup: "gb", langLabel: "British English", flag: "🇬🇧", description: "Distinguished & warm" },
+  { id: "bm_lewis", name: "Lewis", gender: "Male", langGroup: "gb", langLabel: "British English", flag: "🇬🇧", description: "Calm & professional" },
+
+  // Hindi (4)
+  { id: "hf_alpha", name: "Alpha", gender: "Female", langGroup: "hi", langLabel: "Hindi (हिन्दी)", flag: "🇮🇳", description: "Clear & melodic Hindi female" },
+  { id: "hf_beta", name: "Beta", gender: "Female", langGroup: "hi", langLabel: "Hindi (हिन्दी)", flag: "🇮🇳", description: "Warm & natural Hindi female" },
+  { id: "hm_omega", name: "Omega", gender: "Male", langGroup: "hi", langLabel: "Hindi (हिन्दी)", flag: "🇮🇳", description: "Deep & articulate Hindi male" },
+  { id: "hm_psi", name: "Psi", gender: "Male", langGroup: "hi", langLabel: "Hindi (हिन्दी)", flag: "🇮🇳", description: "Expressive & bold Hindi male" },
+
+  // Spanish (3)
+  { id: "ef_dora", name: "Dora", gender: "Female", langGroup: "es", langLabel: "Spanish (Español)", flag: "🇪🇸", description: "Natural European Spanish" },
+  { id: "em_alex", name: "Alex", gender: "Male", langGroup: "es", langLabel: "Spanish (Español)", flag: "🇪🇸", description: "Clear Spanish male" },
+  { id: "em_santa", name: "Santa", gender: "Male", langGroup: "es", langLabel: "Spanish (Español)", flag: "🇪🇸", description: "Warm Spanish male" },
+
+  // French (1)
+  { id: "ff_siwis", name: "Siwis", gender: "Female", langGroup: "fr", langLabel: "French (Français)", flag: "🇫🇷", description: "Smooth French female" },
+
+  // Italian (2)
+  { id: "if_sara", name: "Sara", gender: "Female", langGroup: "it", langLabel: "Italian (Italiano)", flag: "🇮🇹", description: "Melodic Italian female" },
+  { id: "im_nicola", name: "Nicola", gender: "Male", langGroup: "it", langLabel: "Italian (Italiano)", flag: "🇮🇹", description: "Natural Italian male" },
+
+  // Portuguese (3)
+  { id: "pf_dora", name: "Dora", gender: "Female", langGroup: "pt", langLabel: "Portuguese (Português)", flag: "🇧🇷", description: "Warm Brazilian Portuguese" },
+  { id: "pm_alex", name: "Alex", gender: "Male", langGroup: "pt", langLabel: "Portuguese (Português)", flag: "🇧🇷", description: "Clear Brazilian male" },
+  { id: "pm_santa", name: "Santa", gender: "Male", langGroup: "pt", langLabel: "Portuguese (Português)", flag: "🇧🇷", description: "Deep Portuguese male" },
+];
+
 export default function Home() {
   const [activeView, setActiveView] = useState<ViewType>("home");
   
@@ -48,6 +115,8 @@ export default function Home() {
   const [elevenTab, setElevenTab] = useState<"default" | "premium">("default");
   const [voiceProvider, setVoiceProvider] = useState<"edge" | "elevenlabs" | "kokoro" | "f5">("edge");
   const [clonedVoices, setClonedVoices] = useState<any[]>([]);
+  const [kokoroLangFilter, setKokoroLangFilter] = useState<string>("all");
+  const [kokoroSearch, setKokoroSearch] = useState<string>("");
 
   // Favorites State
   type FavoriteVoice = { id: string; provider: "edge" | "elevenlabs" | "kokoro" | "f5"; name: string; subtitle: string; };
@@ -237,7 +306,8 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text, voice: selectedVoice }),
         });
-        voiceNameLabel = `Kokoro (${selectedVoice})`;
+        const kVoiceObj = KOKORO_VOICES.find(v => v.id === selectedVoice);
+        voiceNameLabel = kVoiceObj ? `Kokoro (${kVoiceObj.name} - ${kVoiceObj.langLabel})` : `Kokoro (${selectedVoice})`;
       } else if (voiceProvider === "f5") {
         if (!selectedVoice.startsWith("voice_")) throw new Error("Please select a cloned voice from 'My Voices' first.");
         
@@ -413,9 +483,9 @@ export default function Home() {
     displayVoiceName = elevenVoices.find(v => v.voice_id === selectedVoice)?.name ?? "ElevenLabs Voice";
     displayVoiceSubtitle = "ElevenLabs AI";
   } else if (voiceProvider === "kokoro") {
-    const kVoices = { af_heart: "American Female (Heart)", af_alloy: "American Female (Alloy)", am_adam: "American Male (Adam)", am_echo: "American Male (Echo)" };
-    displayVoiceName = kVoices[selectedVoice as keyof typeof kVoices] ?? "Kokoro Voice";
-    displayVoiceSubtitle = "Local Offline AI";
+    const kVoiceObj = KOKORO_VOICES.find(v => v.id === selectedVoice);
+    displayVoiceName = kVoiceObj ? `${kVoiceObj.flag} ${kVoiceObj.name} (${kVoiceObj.gender})` : "Kokoro Voice";
+    displayVoiceSubtitle = kVoiceObj ? `${kVoiceObj.langLabel} • Local Offline AI` : "Local Offline AI";
   } else if (voiceProvider === "f5") {
     displayVoiceName = clonedVoices.find(v => v.id === selectedVoice)?.voice_name ?? "Cloned Voice";
     displayVoiceSubtitle = "F5 Zero-Shot Clone";
@@ -729,68 +799,184 @@ export default function Home() {
             )}
 
             {/* KOKORO LIBRARY WORKSPACE */}
-            {activeView === "kokoro-library" && (
-              <div className="flex flex-col gap-6 animate-in fade-in duration-300">
-                <div className="flex flex-col mb-2">
-                  <h2 className="text-2xl font-bold tracking-tight">Kokoro Voices</h2>
-                  <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>Local, ultra-realistic offline text-to-speech voices.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { id: "af_heart", name: "American Female (Heart)", gender: "Female" },
-                    { id: "af_alloy", name: "American Female (Alloy)", gender: "Female" },
-                    { id: "am_adam", name: "American Male (Adam)", gender: "Male" },
-                    { id: "am_echo", name: "American Male (Echo)", gender: "Male" },
-                  ].map(voice => {
-                    const isFav = favorites.some(f => f.id === voice.id && f.provider === "kokoro");
-                    return (
-                    <div key={voice.id} className="relative p-4 rounded-xl border flex flex-col gap-2 transition-colors hover:border-[var(--accent)] cursor-pointer" style={{ background: "var(--surface)", borderColor: "var(--card-border)" }} onClick={() => {
-                      setVoiceProvider("kokoro");
-                      setSelectedVoice(voice.id);
-                      setActiveView("tts");
-                    }}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite({ id: voice.id, provider: "kokoro", name: voice.name, subtitle: voice.gender });
-                        }}
-                        className={`absolute top-3 right-16 p-1.5 rounded-full transition-colors ${isFav ? "text-red-500 bg-red-500/10" : "text-[var(--muted)] hover:text-white hover:bg-white/10"}`}
-                        title={isFav ? "Remove from Favorites" : "Add to Favorites"}
-                      >
-                        <svg width="14" height="14" fill={isFav ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isFav ? 0 : 2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                        </svg>
-                      </button>
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-bold pr-16">{voice.name}</h4>
-                        <span className="text-[10px] uppercase font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded">Local</span>
-                      </div>
-                      <div className="flex justify-between items-end mt-2">
-                        <p className="text-xs text-[var(--muted)]">Gender: {voice.gender}</p>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            playVoicePreview("kokoro", voice.id);
-                          }}
-                          disabled={previewLoadingId === `kokoro-${voice.id}`}
-                          className="px-3 py-2 text-xs font-medium rounded-lg border transition-colors flex items-center justify-center cursor-pointer disabled:opacity-50 hover:bg-[var(--elevated)]"
-                          style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
-                          title="Preview Voice"
-                        >
-                          {previewLoadingId === `kokoro-${voice.id}` ? (
-                            <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                          ) : previewPlayingId === `kokoro-${voice.id}` ? (
-                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z" /></svg>
-                          ) : (
-                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                          )}
-                        </button>
-                      </div>
+            {activeView === "kokoro-library" && (() => {
+              const kokoroLangs = [
+                { id: "all", label: "All Voices", count: KOKORO_VOICES.length },
+                { id: "us", label: "🇺🇸 American", count: KOKORO_VOICES.filter(v => v.langGroup === "us").length },
+                { id: "gb", label: "🇬🇧 British", count: KOKORO_VOICES.filter(v => v.langGroup === "gb").length },
+                { id: "hi", label: "🇮🇳 Hindi", count: KOKORO_VOICES.filter(v => v.langGroup === "hi").length },
+                { id: "es", label: "🇪🇸 Spanish", count: KOKORO_VOICES.filter(v => v.langGroup === "es").length },
+                { id: "fr", label: "🇫🇷 French", count: KOKORO_VOICES.filter(v => v.langGroup === "fr").length },
+                { id: "it", label: "🇮🇹 Italian", count: KOKORO_VOICES.filter(v => v.langGroup === "it").length },
+                { id: "pt", label: "🇧🇷 Portuguese", count: KOKORO_VOICES.filter(v => v.langGroup === "pt").length },
+              ];
+
+              const filteredKokoro = KOKORO_VOICES.filter(v => {
+                const matchesLang = kokoroLangFilter === "all" || v.langGroup === kokoroLangFilter;
+                const matchesSearch = !kokoroSearch.trim() || 
+                  v.name.toLowerCase().includes(kokoroSearch.toLowerCase()) ||
+                  v.langLabel.toLowerCase().includes(kokoroSearch.toLowerCase()) ||
+                  v.description.toLowerCase().includes(kokoroSearch.toLowerCase()) ||
+                  v.id.toLowerCase().includes(kokoroSearch.toLowerCase());
+                return matchesLang && matchesSearch;
+              });
+
+              return (
+                <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-2xl font-bold tracking-tight">Kokoro Voice Library</h2>
+                      <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>
+                        41 ultra-realistic local offline AI voices across 7 languages. 100% free & private.
+                      </p>
                     </div>
-                  )})}
+
+                    {/* Search bar */}
+                    <div className="relative w-full md:w-72">
+                      <input
+                        type="text"
+                        value={kokoroSearch}
+                        onChange={(e) => setKokoroSearch(e.target.value)}
+                        placeholder="Search voice or language..."
+                        className="w-full px-4 py-2 pl-9 rounded-xl border text-sm transition-all focus:outline-none focus:border-[var(--accent)]"
+                        style={{ background: "var(--surface)", borderColor: "var(--card-border)", color: "var(--foreground)" }}
+                      />
+                      <svg className="w-4 h-4 absolute left-3 top-3 text-[var(--muted)] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      {kokoroSearch && (
+                        <button 
+                          onClick={() => setKokoroSearch("")} 
+                          className="absolute right-3 top-2.5 text-xs text-[var(--muted)] hover:text-white"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Language category tabs */}
+                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                    {kokoroLangs.map(tab => {
+                      const isActive = kokoroLangFilter === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setKokoroLangFilter(tab.id)}
+                          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer flex items-center gap-1.5 ${
+                            isActive
+                              ? "bg-[var(--foreground)] text-[var(--background)] shadow-sm"
+                              : "text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--elevated)]"
+                          }`}
+                          style={{ borderColor: isActive ? "transparent" : "var(--card-border)" }}
+                        >
+                          <span>{tab.label}</span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? "bg-black/20 text-black dark:bg-white/20 dark:text-white" : "bg-[var(--elevated)] text-[var(--muted)]"}`}>
+                            {tab.count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Voices Grid */}
+                  {filteredKokoro.length === 0 ? (
+                    <div className="rounded-2xl border p-12 text-center" style={{ background: "var(--surface)", borderColor: "var(--card-border)" }}>
+                      <p className="text-sm font-medium" style={{ color: "var(--muted)" }}>No Kokoro voices found matching "{kokoroSearch}".</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredKokoro.map(voice => {
+                        const isFav = favorites.some(f => f.id === voice.id && f.provider === "kokoro");
+                        const isPlaying = previewPlayingId === `kokoro-${voice.id}`;
+                        const isLoading = previewLoadingId === `kokoro-${voice.id}`;
+
+                        return (
+                          <div 
+                            key={voice.id} 
+                            onClick={() => {
+                              setVoiceProvider("kokoro");
+                              setSelectedVoice(voice.id);
+                              setActiveView("tts");
+                            }}
+                            className="relative p-4 rounded-xl border flex flex-col justify-between gap-3 transition-all hover:border-[var(--accent)] hover:shadow-lg cursor-pointer group" 
+                            style={{ background: "var(--surface)", borderColor: "var(--card-border)" }}
+                          >
+                            {/* Favorite Button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleFavorite({ 
+                                  id: voice.id, 
+                                  provider: "kokoro", 
+                                  name: `${voice.flag} ${voice.name} (${voice.gender})`, 
+                                  subtitle: `${voice.langLabel} • Kokoro AI` 
+                                });
+                              }}
+                              className={`absolute top-3 right-3 p-1.5 rounded-full transition-colors ${isFav ? "text-red-500 bg-red-500/10" : "text-[var(--muted)] hover:text-white hover:bg-white/10"}`}
+                              title={isFav ? "Remove from Favorites" : "Add to Favorites"}
+                            >
+                              <svg width="15" height="15" fill={isFav ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isFav ? 0 : 2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                              </svg>
+                            </button>
+
+                            {/* Top info */}
+                            <div className="flex flex-col gap-1 pr-8">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{voice.flag}</span>
+                                <h4 className="font-bold text-sm tracking-tight group-hover:text-[var(--accent)] transition-colors">{voice.name}</h4>
+                                <span className="text-[10px] uppercase font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded">Local</span>
+                              </div>
+                              <p className="text-xs text-[var(--muted)] mt-0.5">{voice.description}</p>
+                            </div>
+
+                            {/* Bottom row: metadata & preview button */}
+                            <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: "var(--card-border)" }}>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] px-2 py-0.5 rounded-md font-medium" style={{ background: "var(--elevated)", color: "var(--muted)" }}>
+                                  {voice.gender}
+                                </span>
+                                <span className="text-[11px] text-[var(--muted)]">
+                                  {voice.langLabel.split(" ")[0]}
+                                </span>
+                              </div>
+
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  playVoicePreview("kokoro", voice.id);
+                                }}
+                                disabled={isLoading}
+                                className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 hover:bg-[var(--elevated)] ${
+                                  isPlaying ? "text-[var(--accent)] border-[var(--accent)]" : ""
+                                }`}
+                                style={{ borderColor: isPlaying ? "var(--accent)" : "var(--card-border)", color: isPlaying ? "var(--accent)" : "var(--foreground)" }}
+                                title="Instant Preview"
+                              >
+                                {isLoading ? (
+                                  <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                ) : isPlaying ? (
+                                  <>
+                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h12v12H6z" /></svg>
+                                    <span>Stop</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                    <span>Preview</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* ELEVENLABS LIBRARY WORKSPACE */}
             {activeView === "elevenlabs-library" && (
