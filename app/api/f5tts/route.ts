@@ -60,8 +60,10 @@ export async function POST(req: Request) {
         return new NextResponse(outBuffer, {
           headers: { "Content-Type": "audio/wav" },
         });
+      } else {
+        const errData = await localRes.json().catch(() => ({}));
+        console.warn("Local F5-TTS returned error:", localRes.status, errData);
       }
-      console.warn("Local F5-TTS returned status:", localRes.status);
     } catch (localErr: any) {
       console.warn("Local F5-TTS connection failed, checking fallbacks...", localErr?.message);
     }

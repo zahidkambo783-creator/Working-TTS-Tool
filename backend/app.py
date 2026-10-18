@@ -1,6 +1,22 @@
 import edge_tts
 import os
+import sys
 import tempfile
+import anyascii
+
+# Ensure UTF-8 output on Windows
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
+# Add FFmpeg to PATH for torchaudio, pydub, and F5-TTS
+ffmpeg_bin = r'C:\Users\Zahid\AppData\Local\ffmpegio\ffmpeg-downloader\ffmpeg\bin'
+if os.path.exists(ffmpeg_bin) and ffmpeg_bin not in os.environ.get('PATH', ''):
+    os.environ['PATH'] = ffmpeg_bin + ';' + os.environ['PATH']
+
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,10 +25,30 @@ from starlette.background import BackgroundTask
 from pydantic import BaseModel
 from pydub import AudioSegment
 import pydub.utils
-AudioSegment.converter = r'C:\Users\Zahid\AppData\Local\ffmpegio\ffmpeg-downloader\ffmpeg\bin\ffmpeg.exe'
-pydub.utils.get_prober_name = lambda: r'C:\Users\Zahid\AppData\Local\ffmpegio\ffmpeg-downloader\ffmpeg\bin\ffprobe.exe'
+AudioSegment.converter = os.path.join(ffmpeg_bin, 'ffmpeg.exe') if os.path.exists(ffmpeg_bin) else 'ffmpeg'
+pydub.utils.get_prober_name = lambda: os.path.join(ffmpeg_bin, 'ffprobe.exe') if os.path.exists(ffmpeg_bin) else 'ffprobe'
 from pydub.silence import split_on_silence
 import soundfile as sf
+
+# Patch torchaudio.load to use soundfile fallback (prevents torchcodec missing dll crash on Windows)
+try:
+    import torchaudio
+    import torch
+    _orig_torchaudio_load = torchaudio.load
+    def safe_torchaudio_load(filepath, *args, **kwargs):
+        try:
+            data, sr = sf.read(filepath)
+            tensor = torch.from_numpy(data).float()
+            if tensor.ndim == 1:
+                tensor = tensor.unsqueeze(0)
+            else:
+                tensor = tensor.t()
+            return tensor, sr
+        except Exception:
+            return _orig_torchaudio_load(filepath, *args, **kwargs)
+    torchaudio.load = safe_torchaudio_load
+except Exception as e:
+    print("Warning patching torchaudio.load:", e)
 
 # Import Kokoro
 try:
@@ -206,6 +242,16 @@ def get_f5_instance():
         print("F5-TTS model loaded successfully!")
     return f5_instance
 
+def sanitize_f5_text(text: str) -> str:
+    if not text:
+        return ""
+    # Transliterate any non-Latin scripts (Hindi/Devanagari, Urdu/Arabic, Cyrillic, etc.)
+    # to clean phonetic ASCII characters so F5-TTS vocabulary can synthesize it smoothly!
+    has_non_latin = any(ord(c) > 0x024F and ord(c) < 0x2E80 for c in text)
+    if has_non_latin:
+        return anyascii.anyascii(text)
+    return text
+
 @app.post("/api/tts/f5-local")
 async def generate_f5_local(
     ref_audio: UploadFile = File(...),
@@ -221,14 +267,18 @@ async def generate_f5_local(
         temp_ref.write(content)
         temp_ref.close()
 
+        # Sanitize text for multi-language compatibility (Hindi, Spanish, Urdu, etc.)
+        safe_ref_text = sanitize_f5_text(ref_text)
+        safe_gen_text = sanitize_f5_text(gen_text)
+
         temp_out = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
         temp_out.close()
 
-        print(f"Generating local F5-TTS speech: {gen_text[:60]}...")
+        print(f"Generating local F5-TTS speech: '{safe_gen_text[:60]}'...")
         wav, sr, _ = model.infer(
             ref_file=temp_ref.name,
-            ref_text=ref_text,
-            gen_text=gen_text,
+            ref_text=safe_ref_text,
+            gen_text=safe_gen_text,
             file_wave=temp_out.name,
             speed=speed,
             remove_silence=True
