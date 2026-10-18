@@ -1,3 +1,4 @@
+import edge_tts
 import os
 import tempfile
 from fastapi import FastAPI, File, UploadFile, Form
@@ -63,6 +64,39 @@ async def generate_kokoro(req: KokoroRequest):
         import traceback
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+class EdgeTtsRequest(BaseModel):
+    text: str
+    voice: str = 'en-US-AriaNeural'
+    rate: str = '+0%'
+    pitch: str = '+0Hz'
+    volume: str = '+0%'
+
+@app.post('/api/tts/edge')
+async def generate_edge_tts(req: EdgeTtsRequest):
+    try:
+        temp_out = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
+        temp_out.close()
+        communicate = edge_tts.Communicate(
+            text=req.text,
+            voice=req.voice,
+            rate=req.rate,
+            pitch=req.pitch,
+            volume=req.volume
+        )
+        await communicate.save(temp_out.name)
+        def cleanup():
+            try:
+                os.unlink(temp_out.name)
+            except Exception:
+                pass
+        return FileResponse(temp_out.name, media_type='audio/mpeg', background=BackgroundTask(cleanup))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={'error': str(e)})
+
 
 @app.post('/api/remove-silence')
 async def remove_silence(
@@ -144,8 +178,60 @@ async def trim_f5_audio(
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+
+# Local F5-TTS
+f5_instance = None
+
+def get_f5_instance():
+    global f5_instance
+    if f5_instance is None:
+        from f5_tts.api import F5TTS
+        print("Loading local F5-TTS model checkpoint...")
+        f5_instance = F5TTS()
+        print("F5-TTS model loaded successfully!")
+    return f5_instance
+
+@app.post("/api/tts/f5-local")
+async def generate_f5_local(
+    ref_audio: UploadFile = File(...),
+    ref_text: str = Form(""),
+    gen_text: str = Form(""),
+    speed: float = Form(1.0)
+):
+    try:
+        model = get_f5_instance()
+        
+        temp_ref = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
+        content = await ref_audio.read()
+        temp_ref.write(content)
+        temp_ref.close()
+
+        temp_out = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
+        temp_out.close()
+
+        print(f"Generating local F5-TTS speech: {gen_text[:60]}...")
+        wav, sr, _ = model.infer(
+            ref_file=temp_ref.name,
+            ref_text=ref_text,
+            gen_text=gen_text,
+            file_wave=temp_out.name,
+            speed=speed,
+            remove_silence=True
+        )
+
+        def cleanup():
+            try:
+                os.unlink(temp_ref.name)
+                os.unlink(temp_out.name)
+            except Exception:
+                pass
+
+        return FileResponse(temp_out.name, media_type="audio/wav", background=BackgroundTask(cleanup))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5000)

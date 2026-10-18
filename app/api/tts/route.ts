@@ -42,6 +42,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Text is required." }, { status: 400 });
     }
 
+    // 1. Try Python Backend with updated edge-tts 7.3.1 (handles Microsoft v2 DRM with 0% 403 errors!)
+    try {
+      const pythonRes = await fetch("http://localhost:5000/api/tts/edge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: text.trim(),
+          voice: voice || "en-US-AriaNeural",
+          rate: rate || "+0%",
+          pitch: pitch || "+0Hz",
+          volume: volume || "+0%"
+        }),
+      });
+
+      if (pythonRes.ok) {
+        const audioBuffer = await pythonRes.arrayBuffer();
+        const uint8 = new Uint8Array(audioBuffer);
+        return new NextResponse(uint8, {
+          status: 200,
+          headers: {
+            "Content-Type": "audio/mpeg",
+            "Content-Disposition": `attachment; filename="zk-voice-${Date.now()}.mp3"`,
+            "Content-Length": uint8.byteLength.toString(),
+            "Cache-Control": "no-store",
+          },
+        });
+      }
+    } catch (e) {
+      console.warn("Python edge-tts unreachable, falling back to node...", e);
+    }
+
     const chunks = splitTextIntoChunks(text.trim(), 3500);
     const audioBuffers: Buffer[] = [];
 

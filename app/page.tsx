@@ -42,6 +42,7 @@ export default function Home() {
   // API Keys
   const [elevenLabsKeysRaw, setElevenLabsKeysRaw] = useState("");
   const [hfToken, setHfToken] = useState("");
+  const [replicateToken, setReplicateToken] = useState("");
   const [elevenVoices, setElevenVoices] = useState<any[]>([]);
   const [elevenLoading, setElevenLoading] = useState(false);
   const [elevenTab, setElevenTab] = useState<"default" | "premium">("default");
@@ -76,6 +77,9 @@ export default function Home() {
       
       const savedHf = localStorage.getItem("hf-token");
       if (savedHf) setHfToken(savedHf);
+
+      const savedReplicate = localStorage.getItem("replicate-token");
+      if (savedReplicate) setReplicateToken(savedReplicate);
 
       const savedFavs = localStorage.getItem("zk_favorites");
       if (savedFavs) setFavorites(JSON.parse(savedFavs));
@@ -240,6 +244,7 @@ export default function Home() {
         const formData = new FormData();
         formData.append("text", text);
         formData.append("voice_id", selectedVoice);
+        if (replicateToken) formData.append("replicate_token", replicateToken);
         if (hfToken) formData.append("hf_token", hfToken);
         
         res = await fetch("/api/f5tts", {
@@ -308,16 +313,18 @@ export default function Home() {
     try {
       let res;
       if (provider === "kokoro") {
-        res = await fetch("http://localhost:5000/api/tts/kokoro", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, voice: voiceId }),
-        });
+        try {
+          res = await fetch(`/previews/kokoro/${voiceId}.wav`);
+          if (!res.ok) throw new Error();
+        } catch {
+          res = await fetch("http://localhost:5000/api/tts/kokoro", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, voice: voiceId }),
+          });
+        }
       } else if (provider === "f5") {
-        const formData = new FormData();
-        formData.append("text", text);
-        formData.append("voice_id", voiceId);
-        if (hfToken) formData.append("hf_token", hfToken);
-        res = await fetch("/api/f5tts", { method: "POST", body: formData });
+        // Play the original cloned voice sample directly and instantly!
+        res = await fetch(`/api/voice-clone/audio?id=${voiceId}`);
       } else if (provider === "elevenlabs") {
         const key = elevenLabsKeysRaw.split("\n")[0]?.trim();
         if (!key) {
@@ -1163,19 +1170,29 @@ export default function Home() {
                       </div>
                       
                       <div className="mt-6 flex flex-col gap-2">
-                        <label className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--muted)" }}>Hugging Face Token</label>
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--muted)" }}>Replicate API Token (Voice Cloning / F5-TTS)</label>
+                          <a 
+                            href="https://replicate.com/account/api-tokens" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-[11px] text-[var(--accent)] hover:underline"
+                          >
+                            Get Free Token ↗
+                          </a>
+                        </div>
                         <input 
                           type="password"
-                          value={hfToken}
+                          value={replicateToken}
                           onChange={(e) => {
-                             setHfToken(e.target.value);
-                             localStorage.setItem("hf-token", e.target.value);
+                             setReplicateToken(e.target.value);
+                             localStorage.setItem("replicate-token", e.target.value);
                           }}
-                          placeholder="hf_..."
+                          placeholder="r8_..."
                           className="w-full bg-transparent border rounded-lg px-4 py-2 text-sm outline-none focus:border-[var(--accent)] transition-colors"
                           style={{ borderColor: "var(--card-border)", color: "var(--foreground)" }}
                         />
-                        <p className="text-[10px] mt-1 mb-2" style={{ color: "var(--muted)" }}>Required for Voice Cloning (F5-TTS) if you hit the ZeroGPU quota limit.</p>
+                        <p className="text-[10px] mt-1 mb-2" style={{ color: "var(--muted)" }}>Fast cloud Voice Cloning with no ZeroGPU quota limits and no queue delays.</p>
                       </div>
 
                     </div>

@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently -n \"NEXT,PY\" -c \"cyan,green\" \"next dev\" \"python -u backend/app.py\"",
+    "dev:next": "next dev",
+    "dev:py": "python -u backend/app.py",
     "build": "next build",
     "start": "next start"
   },
@@ -17,6 +19,7 @@
     "next": "16.3.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "replicate": "^1.4.0",
     "wavesurfer.js": "^8.0.1",
     "ws": "^8.21.3"
   },
@@ -25,6 +28,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^10.0.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
