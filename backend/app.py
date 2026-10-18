@@ -230,6 +230,55 @@ async def trim_f5_audio(
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
+# Speech-to-Text via Faster-Whisper
+whisper_instance = None
+
+def get_whisper_instance():
+    global whisper_instance
+    if whisper_instance is None:
+        try:
+            from faster_whisper import WhisperModel
+            print("Loading faster-whisper base model...")
+            whisper_instance = WhisperModel("base", device="cpu", compute_type="int8")
+            print("faster-whisper model loaded successfully!")
+        except Exception as e:
+            print("Failed to load faster-whisper:", e)
+    return whisper_instance
+
+@app.post("/api/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    try:
+        model = get_whisper_instance()
+        if model is None:
+            return JSONResponse(status_code=500, content={"error": "Whisper STT engine is not available."})
+
+        suffix = os.path.splitext(file.filename or '')[1] or '.wav'
+        temp_in = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+        content = await file.read()
+        temp_in.write(content)
+        temp_in.close()
+
+        print(f"Transcribing audio '{file.filename}' with faster-whisper...")
+        segments, info = model.transcribe(temp_in.name, beam_size=5)
+        text = " ".join([s.text.strip() for s in segments]).strip()
+        print(f"Transcription complete ({info.language}, prob={info.language_probability:.2f}): '{text[:80]}...'")
+
+        try:
+            os.unlink(temp_in.name)
+        except Exception:
+            pass
+
+        return JSONResponse(content={
+            "text": text,
+            "language": info.language,
+            "language_probability": round(info.language_probability, 2)
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
 # Local F5-TTS
 f5_instance = None
 

@@ -4,3 +4,5 @@ TTS
 torch
 torchaudio
 python-multipart
+faster-whisper
+anyascii
