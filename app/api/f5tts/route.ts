@@ -171,6 +171,13 @@ export async function POST(req: Request) {
         return new NextResponse(outBuffer, { headers: { "Content-Type": "audio/wav" } });
       }
 
+      const isFetchFailed = localErr?.message?.includes("fetch failed") || localErr?.code === "ECONNREFUSED";
+      if (isFetchFailed) {
+        throw new Error(
+          "Local PC Python Backend is not running or timed out on a long script. Please make sure Start_ZK_Voice_Studio.bat is running, generate shorter paragraphs (under 500 chars), or switch Cloning Engine to Replicate Cloud GPU (~4s)."
+        );
+      }
+
       throw new Error(`Local PC Engine error: ${localErr?.message || "Make sure Python backend is running on port 5000."}`);
     }
   } catch (error: any) {

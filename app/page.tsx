@@ -315,6 +315,12 @@ export default function Home() {
       } else if (voiceProvider === "f5") {
         if (!selectedVoice.startsWith("voice_")) throw new Error("Please select a cloned voice from 'My Voices' first.");
         
+        if (f5Engine === "local" && text.trim().length > 1000) {
+          throw new Error(
+            `The script is too long for a single Local CPU generation (${text.trim().length} characters). To prevent timeout, please generate 1–2 paragraphs at a time (under 800 chars), or switch Cloning Engine to Replicate Cloud GPU (~4s).`
+          );
+        }
+
         if (f5Engine === "replicate" && !replicateToken.trim()) {
           throw new Error("Replicate API token is required for Cloud GPU mode. Please enter your token in Settings or switch to Local PC Engine.");
         }
@@ -800,6 +806,32 @@ export default function Home() {
                     )}
 
                     <ControlsPanel controls={controls} onChange={setControls} />
+
+                    {voiceProvider === "f5" && f5Engine === "local" && text.length > 500 && (
+                      <div className="p-3.5 rounded-xl border text-xs flex flex-col gap-1.5" style={{ borderColor: text.length > 800 ? "rgba(239, 68, 68, 0.5)" : "rgba(245, 158, 11, 0.5)", background: text.length > 800 ? "rgba(239, 68, 68, 0.08)" : "rgba(245, 158, 11, 0.08)" }}>
+                        <span className={`font-bold flex items-center gap-1.5 ${text.length > 800 ? "text-red-400" : "text-amber-400"}`}>
+                          {text.length > 800 ? "⚠️ Script Is Too Long For Local CPU" : "💡 Local PC Script Notice"} ({text.length} chars)
+                        </span>
+                        <p className="text-[11px] leading-relaxed" style={{ color: "var(--muted)" }}>
+                          {text.length > 800
+                            ? "Voice cloning on CPU takes 1–2 minutes per paragraph. Scripts over 800 chars may time out. Please generate 1–2 paragraphs at a time, or switch to Replicate Cloud GPU (~4s)."
+                            : "On Local PC (CPU), voice cloning takes ~1-2 min. For best speed and flow, generate paragraph by paragraph."}
+                        </p>
+                        {text.length > 800 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setF5Engine("replicate");
+                              localStorage.setItem("zk_f5_engine", "replicate");
+                            }}
+                            className="mt-1 px-3 py-1.5 rounded-lg text-xs font-bold self-start cursor-pointer transition-all hover:opacity-90"
+                            style={{ background: "var(--accent)", color: "#09090D" }}
+                          >
+                            ⚡ Switch to Replicate Cloud GPU (~4s)
+                          </button>
+                        )}
+                      </div>
+                    )}
                     
                     <button
                       onClick={generate}

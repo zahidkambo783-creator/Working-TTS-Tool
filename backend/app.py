@@ -306,6 +306,46 @@ def get_f5_instance():
         print("F5-TTS model loaded successfully!")
     return f5_instance
 
+import re
+
+def split_f5_chunks(text: str, max_chars: int = 200) -> list:
+    if not text:
+        return []
+    # Split by sentence boundaries including Hindi danda (।), English period (.), !, ?, \n, and ;
+    raw_sentences = re.split(r'([।\.\!\?\n\;]+)', text)
+    chunks = []
+    current = ""
+
+    for i in range(0, len(raw_sentences), 2):
+        s = raw_sentences[i]
+        delim = raw_sentences[i+1] if i+1 < len(raw_sentences) else ""
+        piece = (s + delim).strip()
+        if not piece:
+            continue
+
+        if len(current) + len(piece) + 1 <= max_chars:
+            current = (current + " " + piece).strip()
+        else:
+            if current:
+                chunks.append(current)
+            if len(piece) > max_chars:
+                words = piece.split()
+                sub = ""
+                for w in words:
+                    if len(sub) + len(w) + 1 <= max_chars:
+                        sub = (sub + " " + w).strip()
+                    else:
+                        if sub: chunks.append(sub)
+                        sub = w
+                if sub: chunks.append(sub)
+                current = ""
+            else:
+                current = piece
+
+    if current:
+        chunks.append(current)
+    return chunks or [text]
+
 def sanitize_f5_text(text: str) -> str:
     if not text:
         return ""
@@ -335,18 +375,58 @@ async def generate_f5_local(
         safe_ref_text = sanitize_f5_text(ref_text)
         safe_gen_text = sanitize_f5_text(gen_text)
 
+        # Check script length to prevent CPU lockup/timeout (F5-TTS diffusion is heavy)
+        if len(safe_gen_text) > 1200:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": f"Script is too long for a single Local CPU generation ({len(safe_gen_text)} chars). To prevent timeout, please generate 1–2 paragraphs at a time (under 800 chars), or switch Cloning Engine to Replicate Cloud GPU (~4s)."
+                }
+            )
+
+        chunks = split_f5_chunks(safe_gen_text, max_chars=180)
+        print(f"Generating local F5-TTS ({len(chunks)} chunks, total {len(safe_gen_text)} chars)...")
+
         temp_out = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
         temp_out.close()
 
-        print(f"Generating local F5-TTS speech: '{safe_gen_text[:60]}'...")
-        wav, sr, _ = model.infer(
-            ref_file=temp_ref.name,
-            ref_text=safe_ref_text,
-            gen_text=safe_gen_text,
-            file_wave=temp_out.name,
-            speed=speed,
-            remove_silence=True
-        )
+        if len(chunks) <= 1:
+            target_text = chunks[0] if chunks else safe_gen_text
+            wav, sr, _ = model.infer(
+                ref_file=temp_ref.name,
+                ref_text=safe_ref_text,
+                gen_text=target_text,
+                file_wave=temp_out.name,
+                speed=speed,
+                remove_silence=True
+            )
+        else:
+            audio_segments = []
+            for idx, chunk in enumerate(chunks):
+                print(f"Synthesizing chunk {idx+1}/{len(chunks)}: '{chunk[:40]}...'")
+                chunk_file = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
+                chunk_file.close()
+                try:
+                    model.infer(
+                        ref_file=temp_ref.name,
+                        ref_text=safe_ref_text,
+                        gen_text=chunk,
+                        file_wave=chunk_file.name,
+                        speed=speed,
+                        remove_silence=True
+                    )
+                    seg = AudioSegment.from_file(chunk_file.name)
+                    audio_segments.append(seg)
+                    # Natural 150ms pause between sentences
+                    audio_segments.append(AudioSegment.silent(duration=150))
+                finally:
+                    try:
+                        os.unlink(chunk_file.name)
+                    except Exception:
+                        pass
+
+            combined = sum(audio_segments, AudioSegment.empty())
+            combined.export(temp_out.name, format="wav")
 
         def cleanup():
             try:
