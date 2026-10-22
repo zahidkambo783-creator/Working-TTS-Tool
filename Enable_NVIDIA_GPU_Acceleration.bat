@@ -12,12 +12,12 @@ echo.
 echo Press any key to start installing PyTorch with CUDA...
 pause >nul
 
-echo [1/2] Uninstalling CPU PyTorch...
-python -m pip uninstall -y torch torchaudio
+echo [1/2] Uninstalling previous PyTorch...
+python -m pip uninstall -y torch torchvision torchaudio
 
 echo.
 echo [2/2] Installing CUDA 12.4 PyTorch for NVIDIA GPU (GTX 1660 SUPER)...
-python -m pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu124
+python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 echo.
 echo ==========================================================

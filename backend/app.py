@@ -86,8 +86,14 @@ app.add_middleware(
 kokoro_pipelines = {}
 
 def get_kokoro_pipeline(voice_id: str):
+    global KPipeline
     if KPipeline is None:
-        return None
+        try:
+            from kokoro import KPipeline as _KP
+            KPipeline = _KP
+        except Exception as e:
+            print("Failed to import KPipeline:", e)
+            return None
     prefix = voice_id[:2].lower() if len(voice_id) >= 2 else 'af'
     lang_map = {
         'af': 'a', 'am': 'a',
@@ -121,11 +127,23 @@ async def generate_kokoro(req: KokoroRequest):
         all_audio = []
         sample_rate = 24000
         for i, (gs, ps, audio) in enumerate(generator):
-            all_audio.extend(audio.tolist())
+            if audio is not None:
+                all_audio.extend(audio.tolist())
             
-        output_path = "kokoro_output.wav"
-        sf.write(output_path, all_audio, sample_rate)
-        return FileResponse(output_path, media_type="audio/wav")
+        if not all_audio:
+            return JSONResponse(status_code=400, content={"error": "Kokoro produced no audio for this input."})
+
+        temp_out = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
+        temp_out.close()
+        sf.write(temp_out.name, all_audio, sample_rate)
+
+        def cleanup():
+            try:
+                os.unlink(temp_out.name)
+            except Exception:
+                pass
+
+        return FileResponse(temp_out.name, media_type="audio/wav", background=BackgroundTask(cleanup))
     except Exception as e:
         import traceback
         traceback.print_exc()
